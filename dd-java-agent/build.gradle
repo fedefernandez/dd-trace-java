@@ -233,6 +233,9 @@ dependencies {
     // (which are loaded on the bootstrap cl)
   }
   sharedShadowInclude deps.cafe_crypto
+  sharedShadowInclude project(':remote-config:api'), {
+    transitive = false
+  }
   sharedShadowInclude project(':remote-config'), {
     transitive = false
   }

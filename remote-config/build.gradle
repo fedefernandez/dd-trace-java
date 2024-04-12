@@ -24,6 +24,8 @@ ext {
 
 
 dependencies {
+  api project(':remote-config:api')
+
   implementation deps.slf4j
   implementation deps.okhttp
   implementation deps.moshi

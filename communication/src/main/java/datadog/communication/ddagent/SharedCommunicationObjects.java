@@ -7,6 +7,7 @@ import datadog.common.socket.SocketUtils;
 import datadog.communication.http.OkHttpUtils;
 import datadog.communication.monitor.Monitoring;
 import datadog.remoteconfig.ConfigurationPoller;
+import datadog.remoteconfig.DefaultConfigurationPoller;
 import datadog.trace.api.Config;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -69,7 +70,7 @@ public class SharedCommunicationObjects {
       createRemaining(config);
       configUrlSupplier = new RetryConfigUrlSupplier(this, config);
     }
-    return new ConfigurationPoller(
+    return new DefaultConfigurationPoller(
         config, TRACER_VERSION, containerId, entityId, configUrlSupplier, okHttpClient);
   }
 

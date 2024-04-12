@@ -1,6 +1,6 @@
 package com.datadog.appsec.api.security;
 
-import static datadog.remoteconfig.tuf.RemoteConfigRequest.ClientInfo.CAPABILITY_ASM_API_SECURITY_SAMPLE_RATE;
+import static datadog.remoteconfig.Capabilities.CAPABILITY_ASM_API_SECURITY_SAMPLE_RATE;
 
 import com.datadog.appsec.config.AppSecFeaturesDeserializer;
 import datadog.remoteconfig.ConfigurationPoller;

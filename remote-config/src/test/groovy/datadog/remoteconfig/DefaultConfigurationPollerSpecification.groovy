@@ -5,6 +5,7 @@ import datadog.remoteconfig.ConfigurationChangesListener
 import datadog.remoteconfig.ConfigurationChangesTypedListener
 import datadog.remoteconfig.ConfigurationDeserializer
 import datadog.remoteconfig.ConfigurationPoller
+import datadog.remoteconfig.DefaultConfigurationPoller
 import datadog.remoteconfig.JsonCanonicalizer
 import datadog.remoteconfig.Product
 import datadog.remoteconfig.state.ProductListener
@@ -33,7 +34,7 @@ import java.util.function.Supplier
 
 import static datadog.remoteconfig.tuf.RemoteConfigRequest.ClientInfo.ClientState.ConfigState.APPLY_STATE_ERROR
 
-class ConfigurationPollerSpecification extends DDSpecification {
+class DefaultConfigurationPollerSpecification extends DDSpecification {
   final static HttpUrl URL = HttpUrl.get('https://example.com/v0.7/config')
   private static final Request REQUEST = new Request.Builder()
   .url('https://example.com').build()
@@ -53,7 +54,7 @@ class ConfigurationPollerSpecification extends DDSpecification {
   OkHttpClient okHttpClient = Mock()
   AgentTaskScheduler scheduler = Mock()
   AgentTaskScheduler.Scheduled<ConfigurationPoller> scheduled = Mock()
-  ConfigurationPoller poller
+  DefaultConfigurationPoller poller
 
   AgentTaskScheduler.Task task
   Request request
@@ -66,7 +67,7 @@ class ConfigurationPollerSpecification extends DDSpecification {
     injectSysConfig('dd.service', 'my_service')
     injectSysConfig('dd.env', 'my_env')
     injectSysConfig('dd.remote_config.integrity_check.enabled', 'true')
-    poller = new ConfigurationPoller(
+    poller = new DefaultConfigurationPoller(
       Config.get(),
       '0.0.0',
       '',
@@ -528,7 +529,7 @@ class ConfigurationPollerSpecification extends DDSpecification {
       SLURPER.parse(SAMPLE_RESP_BODY.bytes).with {
         it['target_files'] = []
         def targetDecoded = Base64.decoder.decode(it['targets'])
-        Map target = ConfigurationPollerSpecification.SLURPER.parse(targetDecoded)
+        Map target = SLURPER.parse(targetDecoded)
         target['signed']['targets'].remove('employee/ASM_DD/1.recommended.json/config')
         target['signed']['version'] = 42
         it['targets'] = signAndBase64EncodeTargets(target)
@@ -595,7 +596,7 @@ class ConfigurationPollerSpecification extends DDSpecification {
         newFile[fileDecoded.length] = '\n'
         it['target_files'][0]['raw'] = Base64.encoder.encodeToString(newFile)
         def targetDecoded = Base64.decoder.decode(it['targets'])
-        def target = ConfigurationPollerSpecification.SLURPER.parse(targetDecoded)
+        def target = SLURPER.parse(targetDecoded)
         target['signed']['targets']['employee/ASM_DD/1.recommended.json/config']['hashes']['sha256'] =
           new BigInteger((byte[])MessageDigest.getInstance('SHA-256').digest(newFile)).toString(16)
         target['signed']['targets']['employee/ASM_DD/1.recommended.json/config']['length'] += 1
@@ -629,7 +630,7 @@ class ConfigurationPollerSpecification extends DDSpecification {
     1 * call.execute() >> {
       SLURPER.parse(SAMPLE_RESP_BODY.bytes).with {
         def targetDecoded = Base64.decoder.decode(it['targets'])
-        def target = ConfigurationPollerSpecification.SLURPER.parse(targetDecoded)
+        def target = SLURPER.parse(targetDecoded)
         target['signed']['targets']['employee/ASM_DD/1.recommended.json/config']['hashes'].remove('sha256')
         it['targets'] = signAndBase64EncodeTargets(target)
         buildOKResponse(JsonOutput.toJson(it))
@@ -738,7 +739,7 @@ class ConfigurationPollerSpecification extends DDSpecification {
     1 * call.execute() >> {
       SLURPER.parse(SAMPLE_RESP_BODY.bytes).with {
         def targetDecoded = Base64.decoder.decode(it['targets'])
-        def target = ConfigurationPollerSpecification.SLURPER.parse(targetDecoded)
+        def target = SLURPER.parse(targetDecoded)
         target['signed']['targets']['employee/ASM_DD/1.recommended.json/config']['hashes']['sha256'] = '0'
         it['targets'] = signAndBase64EncodeTargets(target)
         buildOKResponse(JsonOutput.toJson(it))
@@ -805,7 +806,7 @@ class ConfigurationPollerSpecification extends DDSpecification {
     String cfgWithoutAsm = SLURPER.parse(SAMPLE_RESP_BODY.bytes).with {
       it['client_configs'] = []
       def targetDecoded = Base64.decoder.decode(it['targets'])
-      def target = ConfigurationPollerSpecification.SLURPER.parse(targetDecoded)
+      def target = SLURPER.parse(targetDecoded)
       target['signed']['targets']['employee/ASM_DD/1.recommended.json/config']['hashes']['sha256'] = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f'
       it['targets'] = signAndBase64EncodeTargets(target)
       JsonOutput.toJson(it)
@@ -862,7 +863,7 @@ class ConfigurationPollerSpecification extends DDSpecification {
     String cfgWithoutAsm = SLURPER.parse(SAMPLE_RESP_BODY.bytes).with {
       it['client_configs'] = []
       def targetDecoded = Base64.decoder.decode(it['targets'])
-      def target = ConfigurationPollerSpecification.SLURPER.parse(targetDecoded)
+      def target = SLURPER.parse(targetDecoded)
       target['signed']['targets']['employee/ASM_DD/1.recommended.json/config']['hashes']['sha256'] = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f'
       it['targets'] = signAndBase64EncodeTargets(target)
       JsonOutput.toJson(it)
@@ -992,7 +993,7 @@ class ConfigurationPollerSpecification extends DDSpecification {
       SLURPER.parseText(SAMPLE_RESP_BODY).with {
         it['client_configs'] << newConfigKey
         def targetDecoded = Base64.decoder.decode(it['targets'])
-        def target = ConfigurationPollerSpecification.SLURPER.parse(targetDecoded)
+        def target = SLURPER.parse(targetDecoded)
         target['signed']['targets'][newConfigKey] = [
           custom: [v: 3],
           hashes: [
@@ -1169,7 +1170,7 @@ class ConfigurationPollerSpecification extends DDSpecification {
     // in target_files, but not targets.signed.targets
     SLURPER.parse(SAMPLE_RESP_BODY.bytes).with {
       def targetDecoded = Base64.decoder.decode(it['targets'])
-      Map targets = ConfigurationPollerSpecification.SLURPER.parse(targetDecoded)
+      Map targets = SLURPER.parse(targetDecoded)
       targets['signed']['targets'] = [:]
       it['targets'] = signAndBase64EncodeTargets(targets)
       JsonOutput.toJson(it)
@@ -1184,7 +1185,7 @@ class ConfigurationPollerSpecification extends DDSpecification {
     // Invalid signature
     SLURPER.parse(SAMPLE_RESP_BODY.bytes).with {
       def targetDecoded = Base64.decoder.decode(it['targets'])
-      Map targets = ConfigurationPollerSpecification.SLURPER.parse(targetDecoded)
+      Map targets = SLURPER.parse(targetDecoded)
       targets['signatures'][0]['sig'] = '59a6478aba87d171261e6995faaa8e36c95c3e75436c4e82f11ac625220e13b703ce9b912ee0731415121b5a47aa2abdb398a60656b7701b15e606c6327c880e'
       it['targets'] = Base64.encoder.encodeToString(JsonOutput.toJson(targets).getBytes('UTF-8'))
       JsonOutput.toJson(it)
@@ -1193,7 +1194,7 @@ class ConfigurationPollerSpecification extends DDSpecification {
     // Structurally invalid signature
     SLURPER.parse(SAMPLE_RESP_BODY.bytes).with {
       def targetDecoded = Base64.decoder.decode(it['targets'])
-      Map targets = ConfigurationPollerSpecification.SLURPER.parse(targetDecoded)
+      Map targets = SLURPER.parse(targetDecoded)
       targets['signatures'][0]['sig'] = 'a' * 128
       it['targets'] = Base64.encoder.encodeToString(JsonOutput.toJson(targets).getBytes('UTF-8'))
       JsonOutput.toJson(it)

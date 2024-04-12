@@ -7,7 +7,7 @@ import com.datadog.debugger.agent.Configuration;
 import com.datadog.debugger.util.MoshiHelper;
 import com.squareup.moshi.JsonAdapter;
 import datadog.remoteconfig.ConfigurationChangesListener;
-import datadog.remoteconfig.state.ParsedConfigKey;
+import datadog.remoteconfig.state.ConfigKey;
 import datadog.remoteconfig.state.ProductListener;
 import datadog.trace.api.Config;
 import datadog.trace.util.AgentTaskScheduler;
@@ -60,7 +60,7 @@ public class SymDBEnablement implements ProductListener {
 
   @Override
   public void accept(
-      ParsedConfigKey configKey,
+      ConfigKey configKey,
       byte[] content,
       ConfigurationChangesListener.PollingRateHinter pollingRateHinter)
       throws IOException {
@@ -79,7 +79,7 @@ public class SymDBEnablement implements ProductListener {
 
   @Override
   public void remove(
-      ParsedConfigKey configKey, ConfigurationChangesListener.PollingRateHinter pollingRateHinter)
+      ConfigKey configKey, ConfigurationChangesListener.PollingRateHinter pollingRateHinter)
       throws IOException {
     if (configKey.getConfigId().equals(SYM_DB_RC_KEY)) {
       stopSymbolExtraction();
