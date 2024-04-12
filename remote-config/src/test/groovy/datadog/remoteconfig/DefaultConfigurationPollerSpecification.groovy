@@ -1,12 +1,12 @@
 import cafe.cryptography.ed25519.Ed25519PrivateKey
 import cafe.cryptography.ed25519.Ed25519PublicKey
 import cafe.cryptography.ed25519.Ed25519Signature
-import datadog.remoteconfig.ConfigurationChangesListener
 import datadog.remoteconfig.ConfigurationChangesTypedListener
 import datadog.remoteconfig.ConfigurationDeserializer
 import datadog.remoteconfig.ConfigurationPoller
 import datadog.remoteconfig.DefaultConfigurationPoller
 import datadog.remoteconfig.JsonCanonicalizer
+import datadog.remoteconfig.PollingRateHinter
 import datadog.remoteconfig.Product
 import datadog.remoteconfig.state.ProductListener
 import datadog.trace.api.Config
@@ -134,7 +134,7 @@ class DefaultConfigurationPollerSpecification extends DDSpecification {
     then:
     1 * okHttpClient.newCall(_ as Request) >> { request = it[0]; call }
     1 * call.execute() >> { buildOKResponse(SAMPLE_RESP_BODY) }
-    1 * listener.accept(_, _, _ as ConfigurationChangesListener.PollingRateHinter)
+    1 * listener.accept(_, _, _ as PollingRateHinter)
     0 * _._
 
     def body = parseBody(request.body())
@@ -580,7 +580,7 @@ class DefaultConfigurationPollerSpecification extends DDSpecification {
     then:
     2 * okHttpClient.newCall(_ as Request) >> { request = it[0]; call }
     2 * call.execute() >> { buildOKResponse(SAMPLE_RESP_BODY) }
-    1 * listener.accept(_, _, _ as ConfigurationChangesListener.PollingRateHinter)
+    1 * listener.accept(_, _, _ as PollingRateHinter)
     0 * _._
 
     when:
@@ -604,7 +604,7 @@ class DefaultConfigurationPollerSpecification extends DDSpecification {
         buildOKResponse(JsonOutput.toJson(it))
       }
     }
-    1 * listener.accept('employee/ASM_DD/1.recommended.json/config', _, _ as ConfigurationChangesListener.PollingRateHinter)
+    1 * listener.accept('employee/ASM_DD/1.recommended.json/config', _, _ as PollingRateHinter)
     0 * _._
   }
 
@@ -1359,7 +1359,7 @@ class DefaultConfigurationPollerSpecification extends DDSpecification {
     1 * listener.accept(
       _,
       { cfg -> cfg['asm']['enabled'] == true },
-      _ as ConfigurationChangesListener.PollingRateHinter)
+      _ as PollingRateHinter)
     0 * _._
   }
 
@@ -1390,7 +1390,7 @@ class DefaultConfigurationPollerSpecification extends DDSpecification {
     1 * listener.accept(
       _,
       { cfg -> cfg['asm']['enabled'] == true },
-      _ as ConfigurationChangesListener.PollingRateHinter)
+      _ as PollingRateHinter)
     0 * _._
   }
 
@@ -1419,11 +1419,11 @@ class DefaultConfigurationPollerSpecification extends DDSpecification {
     1 * listener1.accept(
       _,
       { cfg -> cfg['asm']['enabled'] == true },
-      _ as ConfigurationChangesListener.PollingRateHinter)
+      _ as PollingRateHinter)
     1 * listener2.accept(
       _,
       { cfg -> cfg['api_security']['request_sample_rate'] == 0.1 },
-      _ as ConfigurationChangesListener.PollingRateHinter)
+      _ as PollingRateHinter)
     0 * _._
   }
 
