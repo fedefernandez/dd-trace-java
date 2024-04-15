@@ -47,9 +47,9 @@ public class SymDBEnablement implements ProductListener {
   private final Instrumentation instrumentation;
   private final Config config;
   private final SymbolAggregator symbolAggregator;
+  private final AtomicBoolean starting = new AtomicBoolean();
   private SymbolExtractionTransformer symbolExtractionTransformer;
   private volatile long lastUploadTimestamp;
-  private AtomicBoolean starting = new AtomicBoolean();
 
   public SymDBEnablement(
       Instrumentation instrumentation, Config config, SymbolAggregator symbolAggregator) {
