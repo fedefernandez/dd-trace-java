@@ -2164,6 +2164,10 @@ public class Config {
     return instrumenterConfig.isTraceEnabled();
   }
 
+  public boolean isApmTracingEnabled() {
+    return instrumenterConfig.isApmTracingEnabled();
+  }
+
   public boolean isLongRunningTraceEnabled() {
     return longRunningTraceEnabled;
   }
