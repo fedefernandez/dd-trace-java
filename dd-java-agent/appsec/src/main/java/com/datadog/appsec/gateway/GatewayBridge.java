@@ -1,6 +1,9 @@
 package com.datadog.appsec.gateway;
 
 import static com.datadog.appsec.event.data.MapDataBundle.Builder.CAPACITY_6_10;
+import static com.datadog.appsec.gateway.AppSecRequestContext.DEFAULT_REQUEST_HEADERS_ALLOW_LIST;
+import static com.datadog.appsec.gateway.AppSecRequestContext.REQUEST_HEADERS_ALLOW_LIST;
+import static com.datadog.appsec.gateway.AppSecRequestContext.RESPONSE_HEADERS_ALLOW_LIST;
 
 import com.datadog.appsec.AppSecSystem;
 import com.datadog.appsec.api.security.ApiSecurityRequestSampler;
@@ -145,7 +148,7 @@ public class GatewayBridge {
                 // If APM is disabled Provide the knowledge to downstream services that the current
                 // distributed trace is containing at least one ASM event and must inherit from the
                 // given force-keep priority indeed
-                if (!Config.get().isTraceEnabled()) {
+                if (Config.get().isExperimentalAppSecStandaloneEnabled()) {
                   traceSeg.setTagTop("_dd.p.appsec", 1);
                 }
 

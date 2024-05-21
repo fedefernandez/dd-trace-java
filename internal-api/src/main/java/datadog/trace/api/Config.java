@@ -152,6 +152,7 @@ import static datadog.trace.api.config.AppSecConfig.APPSEC_SCA_ENABLED;
 import static datadog.trace.api.config.AppSecConfig.APPSEC_TRACE_RATE_LIMIT;
 import static datadog.trace.api.config.AppSecConfig.APPSEC_WAF_METRICS;
 import static datadog.trace.api.config.AppSecConfig.APPSEC_WAF_TIMEOUT;
+import static datadog.trace.api.config.AppSecConfig.EXPERIMENTAL_APPSEC_STANDALONE_ENABLED;
 import static datadog.trace.api.config.CiVisibilityConfig.CIVISIBILITY_ADDITIONAL_CHILD_PROCESS_JVM_ARGS;
 import static datadog.trace.api.config.CiVisibilityConfig.CIVISIBILITY_AGENTLESS_ENABLED;
 import static datadog.trace.api.config.CiVisibilityConfig.CIVISIBILITY_AGENTLESS_URL;
@@ -730,6 +731,7 @@ public class Config {
   private final String appSecHttpBlockedTemplateJson;
   private final UserEventTrackingMode appSecUserEventsTracking;
   private final Boolean appSecScaEnabled;
+  private final boolean experimentalAppSecStandaloneEnabled;
   private final boolean apiSecurityEnabled;
   private final float apiSecurityRequestSampleRate;
 
@@ -1625,6 +1627,8 @@ public class Config {
             configProvider.getStringNotEmpty(
                 APPSEC_AUTOMATED_USER_EVENTS_TRACKING, SAFE.toString()));
     appSecScaEnabled = configProvider.getBoolean(APPSEC_SCA_ENABLED);
+    experimentalAppSecStandaloneEnabled =
+        configProvider.getBoolean(EXPERIMENTAL_APPSEC_STANDALONE_ENABLED, false);
     apiSecurityEnabled =
         configProvider.getBoolean(
             API_SECURITY_ENABLED, DEFAULT_API_SECURITY_ENABLED, API_SECURITY_ENABLED_EXPERIMENTAL);
@@ -2163,10 +2167,6 @@ public class Config {
 
   public boolean isTraceEnabled() {
     return instrumenterConfig.isTraceEnabled();
-  }
-
-  public boolean areTracingDependantProductsEnabled() {
-    return instrumenterConfig.areTracingDependantProductsEnabled();
   }
 
   public boolean isLongRunningTraceEnabled() {
@@ -3474,7 +3474,7 @@ public class Config {
     result.put(LANGUAGE_TAG_KEY, LANGUAGE_TAG_VALUE);
     result.put(SCHEMA_VERSION_TAG_KEY, SpanNaming.instance().version());
     result.put(PROFILING_ENABLED, isProfilingEnabled() ? 1 : 0);
-    if (areTracingDependantProductsEnabled()) {
+    if (isExperimentalAppSecStandaloneEnabled()) {
       result.put(APM_ENABLED, 0);
     }
 
@@ -3936,6 +3936,10 @@ public class Config {
 
   public Boolean getAppSecScaEnabled() {
     return appSecScaEnabled;
+  }
+
+  public boolean isExperimentalAppSecStandaloneEnabled() {
+    return experimentalAppSecStandaloneEnabled;
   }
 
   private <T> Set<T> getSettingsSetFromEnvironment(

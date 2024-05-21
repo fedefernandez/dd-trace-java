@@ -28,5 +28,8 @@ public final class AppSecConfig {
 
   public static final String APPSEC_SCA_ENABLED = "appsec.sca.enabled";
 
+  public static final String EXPERIMENTAL_APPSEC_STANDALONE_ENABLED =
+      "experimental.appsec.standalone.enabled";
+
   private AppSecConfig() {}
 }
