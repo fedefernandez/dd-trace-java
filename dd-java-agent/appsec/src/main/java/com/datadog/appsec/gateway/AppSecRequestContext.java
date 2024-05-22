@@ -4,8 +4,11 @@ import com.datadog.appsec.event.data.Address;
 import com.datadog.appsec.event.data.DataBundle;
 import com.datadog.appsec.report.AppSecEvent;
 import com.datadog.appsec.util.StandardizedLogging;
+import datadog.trace.api.Config;
 import datadog.trace.api.http.StoredBodySupplier;
 import datadog.trace.api.internal.TraceSegment;
+import datadog.trace.bootstrap.instrumentation.api.AgentSpan;
+import datadog.trace.bootstrap.instrumentation.api.AgentTracer;
 import io.sqreen.powerwaf.Additive;
 import io.sqreen.powerwaf.PowerwafContext;
 import io.sqreen.powerwaf.PowerwafMetrics;
@@ -415,6 +418,15 @@ public class AppSecRequestContext implements DataBundle, Closeable {
       }
       try {
         this.collectedEvents.addAll(events);
+        // If APM is disabled Provide the knowledge to downstream services that the current
+        // distributed trace is containing at least one ASM event and must inherit from the
+        // given force-keep priority indeed
+        if (Config.get().isExperimentalAppSecStandaloneEnabled()) {
+          AgentSpan activeSpan = AgentTracer.activeSpan();
+          if (activeSpan != null) {
+            activeSpan.getLocalRootSpan().setTag("_dd.p.appsec", 1);
+          }
+        }
       } catch (UnsupportedOperationException e) {
         throw new IllegalStateException("Events cannot be added anymore");
       }

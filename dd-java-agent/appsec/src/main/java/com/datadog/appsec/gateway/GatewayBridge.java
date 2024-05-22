@@ -145,12 +145,6 @@ public class GatewayBridge {
                 traceSeg.setTagTop(DDTags.MANUAL_KEEP, true);
                 traceSeg.setTagTop("appsec.event", true);
                 traceSeg.setTagTop("network.client.ip", ctx.getPeerAddress());
-                // If APM is disabled Provide the knowledge to downstream services that the current
-                // distributed trace is containing at least one ASM event and must inherit from the
-                // given force-keep priority indeed
-                if (Config.get().isExperimentalAppSecStandaloneEnabled()) {
-                  traceSeg.setTagTop("_dd.p.appsec", 1);
-                }
 
                 // Reflect client_ip as actor.ip for backward compatibility
                 Object clientIp = spanInfo.getTags().get(Tags.HTTP_CLIENT_IP);
