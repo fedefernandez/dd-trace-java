@@ -1,5 +1,7 @@
 package com.datadog.appsec.gateway;
 
+import static datadog.trace.api.DDTags.PROPAGATED_APPSEC;
+
 import com.datadog.appsec.event.data.Address;
 import com.datadog.appsec.event.data.DataBundle;
 import com.datadog.appsec.report.AppSecEvent;
@@ -424,7 +426,7 @@ public class AppSecRequestContext implements DataBundle, Closeable {
         if (Config.get().isExperimentalAppSecStandaloneEnabled()) {
           AgentSpan activeSpan = AgentTracer.activeSpan();
           if (activeSpan != null) {
-            activeSpan.getLocalRootSpan().setTag("_dd.p.appsec", 1);
+            activeSpan.getLocalRootSpan().setTag(PROPAGATED_APPSEC, 1);
           }
         }
       } catch (UnsupportedOperationException e) {
