@@ -202,6 +202,17 @@ public final class Events<D> {
         GRAPHQL_SERVER_REQUEST_MESSAGE;
   }
 
+  static final int GRPC_SERVER_METHOD_ID = 16;
+
+  @SuppressWarnings("rawtypes")
+  private static final EventType GRPC_SERVER_METHOD =
+      new ET<>("grpc.server.method", GRPC_SERVER_METHOD_ID);
+
+  @SuppressWarnings("unchecked")
+  public EventType<BiFunction<RequestContext, String, Flow<Void>>> grpcServerMethod() {
+    return (EventType<BiFunction<RequestContext, String, Flow<Void>>>) GRPC_SERVER_METHOD;
+  }
+
   static final int MAX_EVENTS = nextId.get();
 
   private static final class ET<T> extends EventType<T> {
