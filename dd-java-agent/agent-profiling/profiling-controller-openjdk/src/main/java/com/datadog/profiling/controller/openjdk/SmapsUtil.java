@@ -1,21 +1,18 @@
 package com.datadog.profiling.controller.openjdk;
 
 import com.datadog.profiling.controller.openjdk.events.SmapEntryEvent;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.text.ParseException;
+import java.util.Scanner;
 
 public class SmapsUtil {
-  // todo uninstall copilot and rewrite this myself
-  public static void recordSmapEvents(String path) throws IOException {
-    BufferedReader br = Files.newBufferedReader(Paths.get(path));
-    String l;
+  public static void parseSmap(String filePath) throws ParseException {
     long startAddress = 0;
     long endAddress = 0;
     String perms = null;
     long offset = 0;
-    String major = null;
+    String dev = null;
     int inode = 0;
     String pathname = null;
 
@@ -42,130 +39,149 @@ public class SmapsUtil {
 
     boolean thpEligible = false;
     String[] vmFlags = null;
+    try (Scanner scanner = new Scanner(new File(filePath))) {
+      while (scanner.hasNextLine()) {
+        var addresses = scanner.next().split("-");
+        startAddress = Long.parseLong(addresses[0], 16);
+        endAddress = Long.parseLong(addresses[1], 16);
+        perms = scanner.next();
+        offset = scanner.nextLong(16);
+        dev = scanner.next();
 
-    do {
-      l = br.readLine();
-      if (l != null) {
-        String[] parts = l.split("\\s+");
-        if (parts.length < 6) {
-          continue;
+        // todo remove?
+        scanner.reset();
+        inode = scanner.nextInt();
+        if (scanner.hasNext()) {
+          pathname = scanner.next();
         }
-        String[] address = parts[0].split("-");
-        startAddress = Long.parseLong(address[0], 16);
-        endAddress = Long.parseLong(address[1], 16);
-        perms = parts[1];
-        offset = Long.parseLong(parts[2], 16);
-        major = parts[3];
 
-        inode = Integer.parseInt(parts[4]);
-        pathname = parts[5];
-      }
-      for (int i = 0; i < 22; i++) {
-        l = br.readLine();
-        if (l == null) {
-          continue;
+        for (int i = 0; i < 23; i++) {
+          switch (scanner.next()) {
+            case "Size:":
+              size = scanner.nextLong();
+              scanner.next();
+              break;
+            case "KernelPageSize:":
+              kernelPageSize = scanner.nextLong();
+              scanner.next();
+              break;
+            case "MMUPageSize:":
+              mmuPageSize = scanner.nextLong();
+              scanner.next();
+              break;
+            case "Rss":
+              rss = scanner.nextLong();
+              scanner.next();
+              break;
+            case "Pss:":
+              pss = scanner.nextLong();
+              scanner.next();
+              break;
+            case "Shared_Clean:":
+              sharedClean = scanner.nextLong();
+              scanner.next();
+              break;
+            case "Shared_Dirty:":
+              sharedDirty = scanner.nextLong();
+              scanner.next();
+              break;
+            case "Private_Clean:":
+              privateClean = scanner.nextLong();
+              scanner.next();
+              break;
+            case "Private_Dirty:":
+              privateDirty = scanner.nextLong();
+              scanner.next();
+              break;
+            case "Referenced:":
+              referenced = scanner.nextLong();
+              scanner.next();
+              break;
+            case "Anonymous:":
+              anonymous = scanner.nextLong();
+              scanner.next();
+              break;
+            case "LazyFree":
+              lazyFree = scanner.nextLong();
+              scanner.next();
+              break;
+            case "AnonHugePages":
+              anonHugePages = scanner.nextLong();
+              scanner.next();
+              break;
+            case "ShmemPmdMapped:":
+              shmemPmdMapped = scanner.nextLong();
+              scanner.next();
+              break;
+            case "FilePmdMapped:":
+              filePmdMapped = scanner.nextLong();
+              scanner.next();
+              break;
+            case "Shared_Hugetlb:":
+              sharedHugetlb = scanner.nextLong();
+              scanner.next();
+              break;
+            case "Private_Hugetlb:":
+              privateHugetlb = scanner.nextLong();
+              scanner.next();
+              break;
+            case "Swap:":
+              swap = scanner.nextLong();
+              scanner.next();
+              break;
+            case "SwapPss:":
+              swapPss = scanner.nextLong();
+              scanner.next();
+              break;
+            case "Locked:":
+              locked = scanner.nextLong();
+              scanner.next();
+              break;
+            case "THPeligible:":
+              thpEligible = scanner.nextInt() == 1;
+              break;
+            case "VmFlags:":
+              scanner.skip("\\s+");
+              vmFlags = scanner.nextLine().split(" ");
+              break;
+            default:
+              break;
+          }
         }
-        String[] kvs = l.split(":\\s+");
-        switch (kvs[0]) {
-          case "VmFlags":
-            vmFlags = kvs[1].split(" ");
-            break;
-          case "THPeligible":
-            thpEligible = Integer.parseInt(kvs[1]) == 1;
-            break;
-          case "Size":
-            size = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "KernelPageSize":
-            kernelPageSize = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "MMUPageSize":
-            mmuPageSize = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "Rss":
-            rss = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "Pss":
-            pss = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "Shared_Clean":
-            sharedClean = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "Shared_Dirty":
-            sharedDirty = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "Private_Clean":
-            privateClean = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "Private_Dirty":
-            privateDirty = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "Referenced":
-            referenced = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "Anonymous":
-            anonymous = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "LazyFree":
-            lazyFree = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "AnonHugePages":
-            anonHugePages = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "ShmemPmdMapped":
-            shmemPmdMapped = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "FilePmdMapped":
-            filePmdMapped = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "Shared_Hugetlb":
-            sharedHugetlb = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "Private_Hugetlb":
-            privateHugetlb = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "Swap":
-            swap = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "SwapPss":
-            swapPss = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-          case "Locked":
-            locked = Long.parseLong(kvs[1].split(" ")[0]);
-            break;
-        }
+        new SmapEntryEvent(
+                startAddress,
+                endAddress,
+                perms,
+                offset,
+                dev,
+                inode,
+                pathname,
+                size,
+                kernelPageSize,
+                mmuPageSize,
+                rss,
+                pss,
+                sharedClean,
+                sharedDirty,
+                privateClean,
+                privateDirty,
+                referenced,
+                anonymous,
+                lazyFree,
+                anonHugePages,
+                shmemPmdMapped,
+                filePmdMapped,
+                sharedHugetlb,
+                privateHugetlb,
+                swap,
+                swapPss,
+                locked,
+                thpEligible,
+                vmFlags)
+            .commit();
       }
-      new SmapEntryEvent(
-              startAddress,
-              endAddress,
-              perms,
-              offset,
-              major,
-              inode,
-              pathname,
-              size,
-              kernelPageSize,
-              mmuPageSize,
-              rss,
-              pss,
-              sharedClean,
-              sharedDirty,
-              privateClean,
-              privateDirty,
-              referenced,
-              anonymous,
-              lazyFree,
-              anonHugePages,
-              shmemPmdMapped,
-              filePmdMapped,
-              sharedHugetlb,
-              privateHugetlb,
-              swap,
-              swapPss,
-              locked,
-              thpEligible,
-              vmFlags)
-          .commit();
-    } while (l != null);
+    } catch (FileNotFoundException e) {
+      System.out.println("File not found: " + filePath);
+    }
   }
 }

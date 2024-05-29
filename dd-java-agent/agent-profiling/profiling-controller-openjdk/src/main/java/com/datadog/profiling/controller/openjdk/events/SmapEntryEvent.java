@@ -33,7 +33,7 @@ public class SmapEntryEvent extends Event {
   private final long offset;
 
   @Label("Device")
-  private final String major;
+  private final String dev;
 
   @Label("INode ID")
   private final int inodeID;
@@ -112,7 +112,7 @@ public class SmapEntryEvent extends Event {
       long endAddress,
       String perms,
       long offset,
-      String major,
+      String dev,
       int inodeID,
       String pathname,
       long size,
@@ -141,7 +141,7 @@ public class SmapEntryEvent extends Event {
     this.endAddress = endAddress;
     this.perms = perms;
     this.offset = offset;
-    this.major = major;
+    this.dev = dev;
     this.inodeID = inodeID;
     this.pathname = pathname;
     this.size = size;
