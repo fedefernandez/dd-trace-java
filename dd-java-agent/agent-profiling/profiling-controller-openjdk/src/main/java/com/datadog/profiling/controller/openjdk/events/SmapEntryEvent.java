@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public class SmapEntryEvent extends Event {
   private static final AtomicBoolean registered = new AtomicBoolean(false);
   private static final Logger log = LoggerFactory.getLogger(OpenJdkController.class);
-  private static int i = 0;
+  private static final String VSYSCALL_START_ADDRESS = "ffffffffff600000";
 
   @Label("Region Start Address")
   private final long startAddress;
@@ -178,15 +178,13 @@ public class SmapEntryEvent extends Event {
   }
 
   public static void emit() {
-    int eventCount = 0;
-
     long startAddress;
     long endAddress;
     String perms;
     long offset;
     String dev;
     int inode;
-    String pathname = null;
+    String pathname = "";
 
     long size = 0;
     long kernelPageSize = 0;
@@ -211,23 +209,30 @@ public class SmapEntryEvent extends Event {
 
     boolean thpEligible = false;
     String[] vmFlags = null;
-    try (Scanner scanner =
-        new Scanner(
-            new File(
-                "/Users/matthew.alp/Library/Application Support/JetBrains/IntelliJIdea2024.1/scratches/scratch.txt"))) {
+    try (Scanner scanner = new Scanner(new File("/Users/matthew.alp/ubuntu_smap.txt"))) {
       while (scanner.hasNextLine()) {
         String[] addresses = scanner.next().split("-");
-        startAddress = Long.parseLong(addresses[0], 16);
-        endAddress = Long.parseLong(addresses[1], 16);
+        if (!addresses[0].equals(VSYSCALL_START_ADDRESS)) {
+          startAddress = Long.parseLong(addresses[0], 16);
+          endAddress = Long.parseLong(addresses[1], 16);
+        } else {
+          // vsyscall will always map to this region, but in case we ever do size calculations we
+          // make the start
+          // address 0x1000 less than the end address to keep relative sizing correct
+          startAddress = -0x1000 - 1;
+          endAddress = -1;
+        }
         perms = scanner.next();
         offset = scanner.nextLong(16);
         dev = scanner.next();
         inode = scanner.nextInt();
         if (scanner.hasNextLine()) {
-          pathname = scanner.nextLine();
+          pathname = scanner.nextLine().trim();
+        } else {
+          pathname = "";
         }
 
-        for (int i = 0; i < 22; i++) {
+        for (int i = 0; i < 22; i++) { // todo while loop that keeps going until we hit vmflags
           String key = scanner.next();
           switch (key) {
             case "Size:":
