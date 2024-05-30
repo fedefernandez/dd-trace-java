@@ -1,7 +1,5 @@
 package com.datadog.appsec.gateway;
 
-import static datadog.trace.api.DDTags.PROPAGATED_APPSEC;
-
 import com.datadog.appsec.event.data.Address;
 import com.datadog.appsec.event.data.DataBundle;
 import com.datadog.appsec.report.AppSecEvent;
@@ -11,6 +9,7 @@ import datadog.trace.api.http.StoredBodySupplier;
 import datadog.trace.api.internal.TraceSegment;
 import datadog.trace.bootstrap.instrumentation.api.AgentSpan;
 import datadog.trace.bootstrap.instrumentation.api.AgentTracer;
+import datadog.trace.bootstrap.instrumentation.api.Tags;
 import io.sqreen.powerwaf.Additive;
 import io.sqreen.powerwaf.PowerwafContext;
 import io.sqreen.powerwaf.PowerwafMetrics;
@@ -426,7 +425,7 @@ public class AppSecRequestContext implements DataBundle, Closeable {
         if (Config.get().isExperimentalAppSecStandaloneEnabled()) {
           AgentSpan activeSpan = AgentTracer.activeSpan();
           if (activeSpan != null) {
-            activeSpan.getLocalRootSpan().setTag(PROPAGATED_APPSEC, "1");
+            activeSpan.getLocalRootSpan().setTag(Tags.PROPAGATED_APPSEC, "1");
           }
         }
       } catch (UnsupportedOperationException e) {

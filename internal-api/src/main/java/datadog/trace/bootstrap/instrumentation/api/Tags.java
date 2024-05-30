@@ -123,4 +123,6 @@ public class Tags {
   public static final String DD_ENV = "dd.env";
 
   public static final String ENV = "env";
+
+  public static final String PROPAGATED_APPSEC = "p.appsec";
 }

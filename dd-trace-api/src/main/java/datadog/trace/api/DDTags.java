@@ -72,6 +72,4 @@ public class DDTags {
   public static final String PROFILING_CONTEXT_ENGINE = "_dd.profiling.ctx";
   public static final String BASE_SERVICE = "_dd.base_service";
   public static final String APM_ENABLED = "_dd.apm.enabled";
-
-  public static final String PROPAGATED_APPSEC = "_dd.p.appsec";
 }

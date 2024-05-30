@@ -1,7 +1,6 @@
 package com.datadog.iast;
 
 import static com.datadog.iast.IastTag.Enabled.ANALYZED;
-import static datadog.trace.api.DDTags.PROPAGATED_APPSEC;
 import static datadog.trace.api.telemetry.LogCollector.SEND_TELEMETRY;
 
 import com.datadog.iast.model.Vulnerability;
@@ -100,7 +99,7 @@ public class Reporter {
       // TODO: We need to check if we can have an API with more fine-grained semantics on why traces
       // are kept.
       segment.setTagTop(DDTags.MANUAL_KEEP, true);
-      segment.setTagTop(PROPAGATED_APPSEC, "1");
+      segment.setTagTop(Tags.PROPAGATED_APPSEC, "1");
       return batch;
     }
 
