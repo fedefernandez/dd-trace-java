@@ -426,7 +426,7 @@ public class AppSecRequestContext implements DataBundle, Closeable {
         if (Config.get().isExperimentalAppSecStandaloneEnabled()) {
           AgentSpan activeSpan = AgentTracer.activeSpan();
           if (activeSpan != null) {
-            activeSpan.getLocalRootSpan().setBaggageItem(PROPAGATED_APPSEC, "1");
+            activeSpan.getLocalRootSpan().setTag(PROPAGATED_APPSEC, "1");
           }
         }
       } catch (UnsupportedOperationException e) {

@@ -100,7 +100,7 @@ public class Reporter {
       // TODO: We need to check if we can have an API with more fine-grained semantics on why traces
       // are kept.
       segment.setTagTop(DDTags.MANUAL_KEEP, true);
-      segment.setTagTop(PROPAGATED_APPSEC, 1);
+      segment.setTagTop(PROPAGATED_APPSEC, "1");
       return batch;
     }
 

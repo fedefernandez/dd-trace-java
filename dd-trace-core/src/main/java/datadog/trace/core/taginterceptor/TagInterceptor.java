@@ -102,6 +102,9 @@ public class TagInterceptor {
             FORCE_MANUAL_DROP, USER_DROP, SamplingMechanism.MANUAL, span, value);
       case Tags.SAMPLING_PRIORITY:
         return interceptSamplingPriority(span, value);
+      case DDTags.PROPAGATED_APPSEC:
+        span.addAppsecPropagationTag();
+        return true;
       case InstrumentationTags.SERVLET_CONTEXT:
         return interceptServletContext(span, value);
       case SPAN_TYPE:
